@@ -15,18 +15,28 @@ aiohttp 是一个支持异步请求的库，利用它和 asyncio 配合我们可
 start = time.time()
 
 
+# 阻塞操作都要用await手动挂起
 async def get(url):
-    session = aiohttp.ClientSession()       # 创建ClientSession对象
-    response = await session.get(url)       # 发起异步请求
-    result = await response.text()          # 获取响应文本
-    await session.close()                   # 关闭连接资源
+    session = aiohttp.ClientSession()               # 创建ClientSession对象
+    response = await session.get(url)               # 发起异步请求，同样支持post()，headers,params/data,proxy等参数
+    result = await response.text()                  # 获取响应文本,json()返回json类型,read()返回二进制
+    await session.close()                           # 关闭连接资源
     return result
+
+
+# 上面的代码可以使用with语句，不用关闭资源
+async def get_page(url):
+    async with aiohttp.ClientSession() as session:
+        async with await  session.get(url) as response:
+            result = await response.text()
+            return result
 
 
 async def request():
     url = 'http://127.0.0.1:5000'
     print('Waiting for', url)
-    result = await get(url)
+    # result = await get(url)
+    result = await  get_page(url)
     print('Get response from', url, 'Result:', result)
 
 
